@@ -1,23 +1,20 @@
 /* esling-disable class-methods-use-this */
 import con from '../server/config/mysql';
+import mysql from 'mysql';
 
 
 const IT = 'expenses.items';
 const CT = 'expenses.category';
 const INT = 'expenses.itemnames';
-const FIELDS = ["itemName", "itemQuantity", "itemPrice", "categoryName", "orderID"];
 
-// SELECT itemName, categoryName, itemPrice, itemQuantity, itemTotal, itemPurchaseDate
-// FROM expenses.items
-// JOIN category ON category.categoryID = items.categoryID
-// JOIN itemnames ON itemnames.itemNameID = items.itemNameID
 
 class ItemsController {
     mySQLgetAllItems(req, res) {
-        const query = `SELECT itemID, itemName, categoryName, itemPrice, itemQuantity, itemTotal, itemPurchaseDate, orderID
-                        FROM expenses.items
-                        JOIN category ON category.categoryID = items.categoryID
-                        JOIN itemnames ON itemnames.itemNameID = items.itemNameID`;
+        let query = 'SELECT ??, ??, ??, ??, ??, ??, ??, ?? FROM ?? JOIN category ON category.categoryID = items.categoryID JOIN itemnames ON itemnames.itemNameID = items.itemNameID';
+        const inserts = ['itemID', 'itemName', 'categoryName', 'itemPrice', 'itemQuantity', 'itemTotal', 'itemPurchaseDate', 'orderID', IT];
+
+        query = mysql.format(query, inserts);
+
         con.query(query, (err, result) => {
             if (err) throw err;
             console.log(`Retrieved: ${result.length} items from the database`);
@@ -31,8 +28,12 @@ class ItemsController {
 
     mySQLgetItem(req, res) {
         const suppliedId = idValidation(req.params.id);
+        const inserts = ['items', suppliedId];
+        let query = 'SELECT * FROM ?? WHERE itemId = ?';
 
-        con.query('SELECT * FROM items WHERE itemId = ?;', suppliedId, (err, result) => {
+        query = mysql.format(query, inserts);
+
+        con.query(query, (err, result) => {
             if (!result) {
                 return res.status(404).send({
                     success: 'false',
@@ -78,15 +79,23 @@ class ItemsController {
         //         message: 'item price is not a number',
         //     });
         // }
-        //const FIELDS = ["itemName", "itemQuantity", "itemPrice", "categoryName", "orderID"]; `INSERT INTO ${IT} (${FIELDS[0]}, ${FIELDS[1]}, ${FIELDS[2]}) VALUES (?);`
-        const values = [req.body.categoryName, req.body.orderID, "%" + req.body.itemName + "%", req.body.itemPrice, req.body.itemQuantity || 1];
-        const query = `INSERT INTO ${IT} (categoryID, orderID, itemNameID, itemPrice, itemQuantity) VALUES 
-                        ((SELECT categoryID FROM expenses.category WHERE categoryName = ? LIMIT 1),
-                        ?,
-                        (SELECT itemNameID FROM expenses.itemnames WHERE itemName LIKE ? LIMIT 1),
-                        ?,
-                        ?);`
-        con.query(query, values, (err, result) => {
+        const itemName = "%" + req.body.itemName.toString() + "%";
+        const itemQuantity = req.body.itemQuantity || 1;
+
+        let query = `INSERT INTO ?? (categoryID, orderID, itemNameID, itemPrice, itemQuantity) VALUES 
+                ((SELECT ?? FROM ?? WHERE ?? = ? LIMIT 1),
+                ?,
+                (SELECT ?? FROM ?? WHERE ?? LIKE ? LIMIT 1),
+                ?,
+                ?);`
+        const inserts = [
+            IT, 'categoryID', 'expenses.category', 'categoryName', req.body.categoryName, req.body.orderID,
+            'itemNameID', 'expenses.itemnames', 'itemName', itemName,
+            req.body.itemPrice, itemQuantity
+        ];
+
+        query = mysql.format(query, inserts);
+        con.query(query, (err, result) => {
             if (err) throw err;
             console.log("1 record inserted");
             return res.status(200).send({
@@ -119,8 +128,20 @@ class ItemsController {
         // }
         const itemName = req.body.itemName.toString();
         const itemQuantity = req.body.itemQuantity || 1;
-        const values = [itemName, itemQuantity, [req.body.itemPrice]];
-        con.query(`UPDATE ${IT} SET ${FIELDS[0]} = ?, ${FIELDS[1]} = ?, ${FIELDS[2]} = ? WHERE itemId = ${suppliedId};`, values, (err, result) => {
+        let query = `UPDATE ?? SET 
+                    ?? = (SELECT ?? FROM ?? WHERE ?? = ? LIMIT 1),
+                    ?? = ?,
+                    ?? = (SELECT ?? FROM ?? WHERE ?? LIKE ? LIMIT 1), 
+                    ?? = ?, 
+                    ?? = ? 
+                    WHERE ?? = ?;`
+        const inserts = [
+            IT, 'categoryID', 'categoryID', 'expenses.category', 'categoryName', req.body.categoryName,
+            'orderID', req.body.orderID, 'itemNameID', 'itemNameID', 'expenses.itemnames', 'itemName', "%" + itemName + "%",
+            'itemQuantity', itemQuantity, 'itemPrice', req.body.itemPrice, 'itemId', suppliedId
+        ];
+        query = mysql.format(query, inserts);
+        con.query(query, (err, result) => {
             if (err) throw err;
             if (result.affectedRows <= 0) {
                 return res.status(404).send({
@@ -140,7 +161,11 @@ class ItemsController {
     mySQLdeleteItem(req, res) {
         const suppliedId = idValidation(req.params.id);
 
-        con.query(`DELETE FROM ${IT} WHERE itemID = ${suppliedId};`, (err, result) => {
+        let query = "DELETE FROM ?? WHERE ?? = ?;";
+        const inserts = [IT, 'itemID', suppliedId]
+        query = mysql.format(query, inserts);
+
+        con.query(query, (err, result) => {
             if (err) throw err;
 
             if (result.affectedRows <= 0) {
@@ -159,11 +184,12 @@ class ItemsController {
     }
 
     mySQLgetTotal(req, res) {
-        const targets = ["itemName", "itemQuantity", "itemTotal", "itemnames.itemNameID", "items.itemNameID", "items.itemNameID"]
-        const query = `SELECT ??, SUM(??) AS totalQuantity, SUM(??) AS total FROM ${IT}
-                        JOIN ${INT} ON ?? = ??
-                        GROUP BY ??;`;
-        con.query(query, targets, (err, result) => {
+        let query = `SELECT ??, SUM(??) AS totalQuantity, SUM(??) AS total FROM ??
+            JOIN ${INT} ON ?? = ??
+            GROUP BY ??;`;
+        const inserts = ["itemName", "itemQuantity", "itemTotal", IT, "itemnames.itemNameID", "items.itemNameID", "items.itemNameID"]
+        query = mysql.format(query, inserts);
+        con.query(query, (err, result) => {
             if (err) throw err;
             return res.status(201).send({
                 success: 'true',
@@ -172,9 +198,6 @@ class ItemsController {
             });
         })
     }
-
-
-    // Make API For getting totals of items!
 }
 
 function idValidation(id) {

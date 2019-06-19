@@ -112,15 +112,15 @@ export default {
       this.model = Object.assign({}, item);
     },
     async saveItem() {
-      // if (this.model.itemID) {
-      //   await api.updateItem(this.model.itemID, this.model).catch(err => {
-      //     this.status = "A item with that title already exists!";
-      //   });
-      // } else {
-      //   await api.createItem(this.model);
-      // }
+      if (this.model.itemID) {
+        await api.updateItem(this.model.itemID, this.model).catch(err => {
+          this.status = "A item with that title already exists!";
+        });
+      } else {
+        await api.createItem(this.model);
+      }
       console.log(this.model);
-      await api.createItem(this.model);
+      //await api.createItem(this.model);
       this.model = {}; // reset form
       await this.refreshItems();
     },
