@@ -6,23 +6,22 @@ const router = express.Router();
 
 
 // Create Item
-router.post('/api/v1/mySQLitems', ItemController.mySQLcreateItem);
+router.post('/api/v1/Items', ItemController.CreateItem);
 
 // Get all Items
-router.get('/api/v1/mySQLitems', ItemController.mySQLgetAllItems);
-
+router.get('/api/v1/Items', ItemController.GetAllItems);
 
 // Get a single Item
-router.get('/api/v1/mySQLitems/:id', ItemController.mySQLgetItem);
+router.get('/api/v1/Items/:id', ItemController.GetItem);
 
 // Update Item
-router.put('/api/v1/mySQLitems/:id', ItemController.mySQLupdateItem);
+router.put('/api/v1/Items/:id', ItemController.UpdateItem);
 
 // Delete Item
-router.delete('/api/v1/mySQLitems/:id', ItemController.mySQLdeleteItem);
+router.delete('/api/v1/Items/:id', ItemController.DeleteItem);
 
 // Get total Spent on item
-router.get('/api/v1/mySQLgetTotal', ItemController.mySQLgetTotal);
+router.get('/api/v1/GetTotal', ItemController.GetTotal);
 
 
 export default router;

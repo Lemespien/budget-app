@@ -16,39 +16,24 @@ export default {
             return req.data
         })
     },
-    getTodos() {
-        return this.execute('get', '/api/v1/todosAsync')
-    },
-    getTodo(id) {
-        return this.execute('get', `/api/v1/todos/${id}`)
-    },
-    createTodo(data) {
-        return this.execute('post', '/api/v1/todos', data)
-    },
-    updateTodo(id, data) {
-        return this.execute('put', `/api/v1/todosAsync/${id}`, data)
-    },
-    deleteTodo(id) {
-        return this.execute('delete', `/api/v1/todos/${id}`)
-    },
 
     getItems() {
-        return this.execute('get', '/api/v1/mySQLitems')
+        return this.execute('get', '/api/v1/Items')
     },
     getItem(id) {
-        return this.execute('get', `/api/v1/mySQLitems/${id}`)
+        return this.execute('get', `/api/v1/Items/${id}`)
     },
     createItem(data) {
-        return this.execute('post', '/api/v1/mySQLitems', data)
+        return this.execute('post', '/api/v1/Items', data)
     },
     updateItem(id, data) {
-        return this.execute('put', `/api/v1/mySQLitems/${id}`, data)
+        return this.execute('put', `/api/v1/Items/${id}`, data)
     },
     deleteItem(id) {
-        return this.execute('delete', `/api/v1/mySQLitems/${id}`)
+        return this.execute('delete', `/api/v1/Items/${id}`)
     },
 
     getTotal() {
-        return this.execute('get', '/api/v1/mySQLgetTotal')
+        return this.execute('get', '/api/v1/GetTotal')
     },
 }

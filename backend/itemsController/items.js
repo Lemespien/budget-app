@@ -9,7 +9,7 @@ const INT = 'expenses.itemnames';
 
 
 class ItemsController {
-    mySQLgetAllItems(req, res) {
+    GetAllItems(req, res) {
         let query = 'SELECT ??, ??, ??, ??, ??, ??, ??, ?? FROM ?? JOIN category ON category.categoryID = items.categoryID JOIN itemnames ON itemnames.itemNameID = items.itemNameID';
         const inserts = ['itemID', 'itemName', 'categoryName', 'itemPrice', 'itemQuantity', 'itemTotal', 'itemPurchaseDate', 'orderID', IT];
 
@@ -26,9 +26,10 @@ class ItemsController {
         });
     }
 
-    mySQLgetItem(req, res) {
+    GetItem(req, res) {
         const suppliedId = idValidation(req.params.id);
         const inserts = ['items', suppliedId];
+
         let query = 'SELECT * FROM ?? WHERE itemId = ?';
 
         query = mysql.format(query, inserts);
@@ -55,7 +56,7 @@ class ItemsController {
         })
     }
 
-    mySQLcreateItem(req, res) {
+    CreateItem(req, res) {
         /*
                 SOMETHING HERE WENT WRONG
 
@@ -105,7 +106,7 @@ class ItemsController {
         })
     }
 
-    mySQLupdateItem(req, res) {
+    UpdateItem(req, res) {
         const suppliedId = idValidation(req.params.id);
 
         if (!req.body.itemName) {
@@ -158,7 +159,7 @@ class ItemsController {
 
     }
 
-    mySQLdeleteItem(req, res) {
+    DeleteItem(req, res) {
         const suppliedId = idValidation(req.params.id);
 
         let query = "DELETE FROM ?? WHERE ?? = ?;";
@@ -183,7 +184,7 @@ class ItemsController {
         })
     }
 
-    mySQLgetTotal(req, res) {
+    GetTotal(req, res) {
         let query = `SELECT ??, SUM(??) AS totalQuantity, SUM(??) AS total FROM ??
             JOIN ${INT} ON ?? = ??
             GROUP BY ??;`;

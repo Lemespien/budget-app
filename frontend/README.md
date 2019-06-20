@@ -1,4 +1,4 @@
-# todo-app
+# budget-app
 
 ## Project setup
 ```
